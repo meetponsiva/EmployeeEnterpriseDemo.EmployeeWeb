@@ -2,7 +2,7 @@ name: EmployeeWeb E2E (Build -> DEV -> UAT -> PROD -> COB)
 
 on:
   push:
-    branches: [ master1, main1 ]
+    branches: [ master, main ]
 
 jobs:
   build-once:
