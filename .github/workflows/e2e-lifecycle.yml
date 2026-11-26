@@ -1,0 +1,63 @@
+name: EmployeeWeb E2E (Build -> DEV -> UAT -> PROD -> COB)
+
+on:
+  push:
+    branches: [ master1, main1 ]
+
+jobs:
+  build-once:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & Push EmployeeWeb
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/employee-web:${{ github.sha }}
+
+  deploy-dev:
+    needs: build-once
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az containerapp update -n ca-emp-web-dev -g rg-emp-lifecycle --image index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/employee-web:${{ needs.build-once.outputs.sha }}
+
+  deploy-uat:
+    needs: [build-once, deploy-dev]
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az containerapp update -n ca-emp-web-uat -g rg-emp-lifecycle --image index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/employee-web:${{ needs.build-once.outputs.sha }}
+
+  deploy-prod:
+    needs: [build-once, deploy-uat]
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az containerapp update -n ca-emp-web-prod -g rg-emp-lifecycle --image index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/employee-web:${{ needs.build-once.outputs.sha }}
+
+  deploy-cob:
+    needs: [build-once, deploy-prod]
+    runs-on: ubuntu-latest
+    environment: cob
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: az containerapp update -n ca-emp-web-cob -g rg-emp-lifecycle --image index.docker.io/${{ secrets.DOCKERHUB_USERNAME }}/employee-web:${{ needs.build-once.outputs.sha }}

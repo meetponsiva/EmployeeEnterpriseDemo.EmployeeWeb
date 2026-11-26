@@ -1,0 +1,45 @@
+﻿@model List<EmployeeWeb.Controllers.EmployeeItem>
+@{
+    string env = ViewBag.EnvName ?? "LOCAL";
+    string badgeColor = env switch
+    {
+        "DEV" => "#0d6efd",   // Blue
+        "UAT" => "#fd7e14",   // Orange
+        "PROD" => "#198754",  // Green
+        "COB" => "#6f42c1",   // Purple
+        _ => "#6c757d"        // Gray (Local)
+    };
+}
+
+<div style="max-width: 650px; margin: 40px auto; font-family: Segoe UI, sans-serif;">
+    <div style="background: @badgeColor; color: white; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px;">
+        <h2 style="margin: 0;">Employee Directory — Environment: @env</h2>
+        <small>Connected Backend API Environment: <strong>@ViewBag.ApiEnvName</strong></small>
+    </div>
+
+    <form asp-action="Create" method="post" style="display: flex; gap: 10px; margin-bottom: 24px;">
+        <input type="text" name="name" placeholder="Enter Employee Name..." required
+               style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px;" />
+        <button type="submit" style="padding: 10px 20px; background: @badgeColor; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            Add Employee
+        </button>
+    </form>
+
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f4f4f4; text-align: left;">
+                <th style="padding: 10px; border-bottom: 2px solid #ddd;">ID</th>
+                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Employee Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">@emp.Id</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee;">@emp.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
