@@ -21,8 +21,10 @@ public class HomeController(IHttpClientFactory httpClientFactory, IConfiguration
             foreach (var item in empArray.EnumerateArray())
             {
                 list.Add(new EmployeeItem(
-                    item.GetProperty("id").GetInt32(),
-                    item.GetProperty("name").GetString() ?? ""));
+                item.GetProperty("id").GetInt32(),
+                item.GetProperty("departmentId").GetInt32(),
+                item.GetProperty("name").GetString() ?? "")
+                    );
             }
         }
 
@@ -49,4 +51,4 @@ public class HomeController(IHttpClientFactory httpClientFactory, IConfiguration
     }
 }
 
-public record EmployeeItem(int Id, string Name);
+public record EmployeeItem(int Id, int DepartmentId, string Name);
